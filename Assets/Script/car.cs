@@ -1,10 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class car : MonoBehaviour
 {
-    public float speed;
+    public GameObject box, gameover;
+    public TMP_Text soal_tampil;
+    public float speed, sudut;
+
+    public string [] soal, kuncijawaban;
+    string[] jawaban;
+    int nomor = -1;
+
+    void Start(){
+        StartCoroutine(lanjutsoal());
+    }
+
     void Update()
     {
         if (Input.GetKey(KeyCode.LeftArrow)){
@@ -19,5 +31,46 @@ public class car : MonoBehaviour
             GetComponent<Rigidbody>().velocity = new Vector3(0, 0,0);
             transform.rotation = Quaternion.Euler(0,0,0);
         }
+    }
+
+    void OnTriggerEnter(Collider obj){
+        if(obj.name == "box"){
+            if(obj.transform.GetChild(0).GetComponent<TMP_Text>().text == jawaban[0]){
+                print("betul");
+            } else{
+                gameover.SetActive(true);
+                Time.timeScale = 0;
+            }
+            StartCoroutine(lanjutsoal());
+        }
+    }
+
+    IEnumerator lanjutsoal(){
+        yield return new WaitForSeconds(1.5f);
+
+        nomor++;
+
+        soal_tampil.transform.parent.gameObject.SetActive(true);
+        soal_tampil.text = soal[nomor];
+
+        box.GetComponent<Animator>().enabled = true;
+        box.GetComponent<Animator>().Play(0);
+
+        jawaban = kuncijawaban[nomor].Split('|');
+        for(int i=0;i<box.transform.childCount;i++){
+            box.transform.GetChild(i).GetChild(0).GetComponent<TMP_Text>().text = "";
+        }
+        int index = 0;
+        for(int i=0;i<box.transform.childCount;i++){
+            do {
+                index = (int)Random.Range(0,2.4f);
+            } while(box.transform.GetChild(i).GetChild(0).GetComponent<TMP_Text>().text !="");
+            box.transform.GetChild(i).GetChild(0).GetComponent<TMP_Text>().text = jawaban[i];
+        }
+    }
+
+    public void restart(){
+        Time.timeScale = 1;
+        Application.LoadLevel(Application.loadedLevelName);
     }
 }
